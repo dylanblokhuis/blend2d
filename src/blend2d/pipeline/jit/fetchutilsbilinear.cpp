@@ -6,22 +6,14 @@
 #include "../../api-build_p.h"
 #if !defined(BL_BUILD_NO_JIT)
 
-#include "../../pipeline/jit/pipecompiler_p.h"
-#include "../../pipeline/jit/pipepart_p.h"
-#include "../../tables/tables_p.h"
+#include "../../pipeline/jit/fetchutilsbilinear_p.h"
 
 namespace bl {
 namespace Pipeline {
 namespace JIT {
+namespace FetchUtils {
 
-PipePart::PipePart(PipeCompiler* pc, PipePartType partType) noexcept
-  : pc(pc),
-    cc(pc->cc),
-    ct(commonTable),
-    _partType(partType) {}
-
-void PipePart::preparePart() noexcept {}
-
+} // {FetchUtils}
 } // {JIT}
 } // {Pipeline}
 } // {bl}

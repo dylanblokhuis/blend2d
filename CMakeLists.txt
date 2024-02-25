@@ -294,6 +294,8 @@ else()
       int blend2d_jit_available() { return 1; }
     #elif defined(_M_IX86) || defined(__X86__) || defined(__i386__)
       int blend2d_jit_available() { return 1; }
+    #elif defined(_M_ARM64) || defined(__arm64__) || defined(__aarch64__)
+      int blend2d_jit_available() { return 1; }
     #else
       // JIT not available
     #endif
@@ -691,8 +693,8 @@ set(BLEND2D_SRC_LIST
   blend2d/opentype/otglyf_avx2.cpp
   blend2d/opentype/otglyf_sse4_2.cpp
   blend2d/opentype/otglyf_p.h
-  blend2d/opentype/otglyfsimddata.cpp
   blend2d/opentype/otglyfsimddata_p.h
+  blend2d/opentype/otglyfsimddata.cpp
   blend2d/opentype/otglyfsimdimpl_p.h
   blend2d/opentype/otkern.cpp
   blend2d/opentype/otkern_p.h
@@ -725,14 +727,27 @@ set(BLEND2D_SRC_LIST
   blend2d/pipeline/jit/fetchsolidpart_p.h
   blend2d/pipeline/jit/fetchutils.cpp
   blend2d/pipeline/jit/fetchutils_p.h
+  blend2d/pipeline/jit/fetchutilsbilinear.cpp
+  blend2d/pipeline/jit/fetchutilsbilinear_p.h
+  blend2d/pipeline/jit/fetchutilscoverage.cpp
+  blend2d/pipeline/jit/fetchutilscoverage_p.h
+  blend2d/pipeline/jit/fetchutilsinlineloops.cpp
+  blend2d/pipeline/jit/fetchutilsinlineloops_p.h
   blend2d/pipeline/jit/fillpart.cpp
   blend2d/pipeline/jit/fillpart_p.h
   blend2d/pipeline/jit/jitbase_p.h
+  blend2d/pipeline/jit/pipecompiler.cpp
+  blend2d/pipeline/jit/pipecompiler_a64.cpp
   blend2d/pipeline/jit/pipecompiler_x86.cpp
+  blend2d/pipeline/jit/pipecompiler_test.cpp
   blend2d/pipeline/jit/pipecompiler_p.h
+  blend2d/pipeline/jit/pipecomposer.cpp
+  blend2d/pipeline/jit/pipecomposer_p.h
   blend2d/pipeline/jit/pipedebug_p.h
-  blend2d/pipeline/jit/pipegencore.cpp
-  blend2d/pipeline/jit/pipegencore_p.h
+  blend2d/pipeline/jit/pipefunction_p.h
+  blend2d/pipeline/jit/pipefunction.cpp
+  blend2d/pipeline/jit/pipeprimitives.cpp
+  blend2d/pipeline/jit/pipeprimitives_p.h
   blend2d/pipeline/jit/pipegenruntime_p.h
   blend2d/pipeline/jit/pipegenruntime.cpp
   blend2d/pipeline/jit/pipepart.cpp
@@ -1015,6 +1030,7 @@ if (NOT BLEND2D_EMBED)
       "bl_sample_6"
       "bl_sample_7"
       "bl_sample_8"
+      "bl_playground"
     )
 
     set(BLEND2D_SAMPLES_CAPI

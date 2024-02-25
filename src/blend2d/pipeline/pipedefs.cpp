@@ -362,7 +362,7 @@ Signature initPatternAffine(FetchData::Pattern& fetchData, BLExtendMode extendMo
   }
   else {
     fetchData.affine.addrMul32[0] = int32_t(bytesPerPixel);
-    fetchData.affine.addrMul32[1] = int32_t(fetchData.src.stride);;
+    fetchData.affine.addrMul32[1] = int32_t(fetchData.src.stride);
   }
 
   return Signature::fromFetchType(fetchType);

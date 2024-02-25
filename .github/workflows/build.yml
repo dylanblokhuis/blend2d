@@ -118,24 +118,24 @@ jobs:
 
     steps:
       - name: "Checkout Blend2D"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: "source"
 
       - name: "Checkout AsmJit"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: asmjit/asmjit
           path: "source/3rdparty/asmjit"
 
       - name: "Checkout Build Actions"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: build-actions/build-actions
           path: "build-actions"
 
       - name: "Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 

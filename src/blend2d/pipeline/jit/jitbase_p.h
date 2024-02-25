@@ -18,6 +18,9 @@
   #include <asmjit/a64.h>
 #endif
 
+// TODO: REMOVE
+#define UNIMPLEMENTED() blRuntimeAssertionFailure(__FILE__, __LINE__, "Unimplemented")
+
 //! \cond INTERNAL
 //! \addtogroup blend2d_pipeline_jit
 //! \{
@@ -55,6 +58,9 @@ using KReg = x86::KReg;
 using Mem = x86::Mem;
 using CondCode = x86::CondCode;
 using AsmCompiler = x86::Compiler;
+
+static BL_INLINE_NODEBUG Mem mem_ptr(const Gp& base, int32_t disp = 0) noexcept { return x86::ptr(base, disp); }
+static BL_INLINE_NODEBUG Mem mem_ptr(const Gp& base, const Gp& index, uint32_t shift = 0, int32_t disp = 0) noexcept { return x86::ptr(base, index, shift, disp); }
 #endif
 
 #if defined(BL_JIT_ARCH_A64)
@@ -65,6 +71,9 @@ using Vec = a64::Vec;
 using Mem = a64::Mem;
 using CondCode = a64::CondCode;
 using AsmCompiler = a64::Compiler;
+
+static BL_INLINE_NODEBUG Mem mem_ptr(const Gp& base, int32_t disp = 0) noexcept { return a64::ptr(base, disp); }
+static BL_INLINE_NODEBUG Mem mem_ptr(const Gp& base, const Gp& index, uint32_t shift = 0) noexcept { return a64::ptr(base, index, a64::lsl(shift)); }
 #endif
 
 // Strong Enums
@@ -97,7 +106,8 @@ enum class DataWidth : uint8_t {
   k8 = 0,
   k16 = 1,
   k32 = 2,
-  k64 = 3
+  k64 = 3,
+  k128 = 4
 };
 
 //! Broadcast width.
@@ -143,6 +153,21 @@ static BL_INLINE asmjit::TypeId typeIdOf(SimdWidth simdWidth) noexcept {
   blUnused(simdWidth);
   return asmjit::TypeId::kInt32x4;
 #endif
+}
+
+//! Calculates ideal SIMD width for the requested `byteCount` considering the given `maxSimdWidth`.
+//!
+//! The returned SimdWidth is at most `maxSimdWidth`, but could be lesser in case
+//! the whole SimdWidth is not required to process the requested `byteCount`.
+static BL_INLINE_NODEBUG SimdWidth simdWidthForByteCount(SimdWidth maxSimdWidth, uint32_t byteCount) noexcept {
+  return blMin(maxSimdWidth, SimdWidth((byteCount + 15) >> 5));
+}
+
+//! Calculates the number of registers that would be necessary to hold the requested `byteCount`, considering
+//! the given `maxSimdWidth`.
+static BL_INLINE_NODEBUG uint32_t vecCountForByteCount(SimdWidth maxSimdWidth, uint32_t byteCount) noexcept {
+  uint32_t shift = uint32_t(maxSimdWidth) + 4u;
+  return (byteCount + ((1u << shift) - 1u)) >> shift;
 }
 
 static BL_INLINE_NODEBUG SimdWidth simdWidthOf(const Vec& reg) noexcept {
@@ -399,6 +424,7 @@ static BL_INLINE_NODEBUG const Operand_& firstOp(const OpArray& opArray) noexcep
 static BL_INLINE_NODEBUG uint32_t countOp(const Operand_&) noexcept { return 1u; }
 static BL_INLINE_NODEBUG uint32_t countOp(const OpArray& opArray) noexcept { return opArray.size(); }
 
+// TODO: REMOVE!
 #if defined(BL_JIT_ARCH_X86)
 template<typename T> static BL_INLINE bool isXmm(const T& op) noexcept { return x86::Reg::isXmm(firstOp(op)); }
 template<typename T> static BL_INLINE bool isYmm(const T& op) noexcept { return x86::Reg::isYmm(firstOp(op)); }
@@ -425,7 +451,6 @@ static BL_INLINE uint8_t perm2x128Imm(Perm2x128 hi, Perm2x128 lo) noexcept {
 // Injecting
 // ---------
 
-
 //! Provides scope-based code injection.
 //!
 //! Scope-based code injection is used in some places to inject code at a specific point in the generated code.
@@ -433,19 +458,24 @@ static BL_INLINE uint8_t perm2x128Imm(Perm2x128 hi, Perm2x128 lo) noexcept {
 //! as at the initialization phase it still doesn't know whether everything required to generate the code in place.
 class ScopedInjector {
 public:
-  asmjit::BaseCompiler* cc;
-  asmjit::BaseNode** hook;
-  asmjit::BaseNode* prev;
+  asmjit::BaseCompiler* cc {};
+  asmjit::BaseNode** hook {};
+  asmjit::BaseNode* prev {};
+  bool hookWasCursor = false;
 
   BL_NONCOPYABLE(ScopedInjector)
 
   BL_INLINE ScopedInjector(asmjit::BaseCompiler* cc, asmjit::BaseNode** hook) noexcept
     : cc(cc),
       hook(hook),
-      prev(cc->setCursor(*hook)) {}
+      prev(cc->setCursor(*hook)),
+      hookWasCursor(*hook == prev) {}
 
   BL_INLINE ~ScopedInjector() noexcept {
-    *hook = cc->setCursor(prev);
+    if (!hookWasCursor)
+      *hook = cc->setCursor(prev);
+    else
+      *hook = cc->cursor();
   }
 };
 

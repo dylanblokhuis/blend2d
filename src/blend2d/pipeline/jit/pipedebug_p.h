@@ -6,7 +6,7 @@
 #ifndef BLEND2D_PIPELINE_JIT_PIPEDEBUG_P_H_INCLUDED
 #define BLEND2D_PIPELINE_JIT_PIPEDEBUG_P_H_INCLUDED
 
-#include "../../pipeline/jit/pipegencore_p.h"
+#include "../../pipeline/jit/pipeprimitives_p.h"
 
 //! \cond INTERNAL
 //! \addtogroup blend2d_pipeline_jit

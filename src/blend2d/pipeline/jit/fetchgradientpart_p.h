@@ -31,7 +31,7 @@ public:
 
   BL_INLINE_NODEBUG bool isRectFill() const noexcept { return _isRectFill; }
 
-  void initY(const Gp& x, const Gp& y) noexcept;
+  void initY(const PipeFunction& fn, const Gp& x, const Gp& y) noexcept;
   void advanceY() noexcept;
 
   void startAtX(const Gp& x) noexcept;
@@ -98,7 +98,7 @@ public:
 
   void preparePart() noexcept override;
 
-  void _initPart(Gp& x, Gp& y) noexcept override;
+  void _initPart(const PipeFunction& fn, Gp& x, Gp& y) noexcept override;
   void _finiPart() noexcept override;
 
   void advanceY() noexcept override;
@@ -153,7 +153,7 @@ public:
 
   void preparePart() noexcept override;
 
-  void _initPart(Gp& x, Gp& y) noexcept override;
+  void _initPart(const PipeFunction& fn, Gp& x, Gp& y) noexcept override;
   void _finiPart() noexcept override;
 
   void advanceY() noexcept override;
@@ -187,10 +187,6 @@ public:
     // Temporary values precalculated for the next fetch loop.
     Vec t0, t1, t2;
 
-#if defined(BL_JIT_ARCH_X86)
-    KReg t1Pred;
-#endif // BL_JIT_ARCH_X86
-
     // 4+ pixels.
     Vec xx_inc;
     Vec xx_off;
@@ -202,7 +198,7 @@ public:
 
   void preparePart() noexcept override;
 
-  void _initPart(Gp& x, Gp& y) noexcept override;
+  void _initPart(const PipeFunction& fn, Gp& x, Gp& y) noexcept override;
   void _finiPart() noexcept override;
 
   void advanceY() noexcept override;
