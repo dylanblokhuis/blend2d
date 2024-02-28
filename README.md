@@ -1,4 +1,4 @@
-Blend2D
+Blend2D - with zig build system
 -------
 
 2D Vector Graphics Powered by a JIT Compiler.
