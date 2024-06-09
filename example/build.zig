@@ -20,6 +20,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+        .use_llvm = false,
+        .use_lld = false,
     });
 
     const b2d = b.dependency("blend2d", .{
