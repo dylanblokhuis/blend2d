@@ -5,26 +5,42 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addSharedLibrary(.{
         .name = "blend2d",
         .target = target,
-        .optimize = optimize,
+        .optimize = if (optimize != .Debug) .ReleaseSmall else .Debug,
     });
 
-    lib.defineCMacro("NDEBUG", null);
+    if (optimize == .Debug) {
+        lib.defineCMacro("BL_BUILD_DEBUG", null);
+    } else {
+        lib.defineCMacro("NDEBUG", null);
+        lib.defineCMacro("BL_BUILD_RELEASE", null);
+    }
+
     lib.defineCMacro("ASMJIT_STATIC", null);
+    // TODO: add support for other SIMD instruction sets
     lib.defineCMacro("BL_BUILD_OPT_AVX2", null);
 
     lib.linkLibC();
     lib.linkLibCpp();
-    lib.addIncludePath(.{ .path = "./src" });
-    lib.addIncludePath(.{ .path = "./asmjit/src" });
-    lib.installHeadersDirectory("./src", "blend2d");
-    lib.installHeadersDirectory("./asmjit/src", "asmjit");
+    lib.addIncludePath(b.path("./src"));
+    lib.addIncludePath(b.path("./asmjit/src"));
+    lib.installHeadersDirectory(b.path("./src"), "blend2d", .{});
+    lib.installHeadersDirectory(b.path("./asmjit/src"), "asmjit", .{});
     lib.addCSourceFiles(.{
         .files = &src_files,
+        .flags = &.{
+            "-fvisibility=hidden",
+            "-fno-exceptions",
+            "-fno-rtti",
+            "-fno-math-errno",
+            "-fno-semantic-interposition",
+            "-fno-threadsafe-statics",
+            "-fmerge-all-constants",
+            "-ftree-vectorize",
+        },
     });
-    // lib.linkLibCpp();
 
     b.installArtifact(lib);
 }

@@ -4,3 +4,4 @@ build_*
 3rdparty
 zig-out
 zig-cache
+.zig-cache
