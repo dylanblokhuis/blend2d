@@ -219,9 +219,11 @@ pub fn main() !void {
     std.debug.print("{any}\n", .{font.textBoundsNoWrap("Hello world!!!!!!!!!!!!!!!!!!!!!!!!1")});
     ctx.end();
 
-    while (true) {
-        std.time.sleep(std.time.ns_per_s * 1);
-    }
+    ctx.writeToFile("something.png");
+
+    // while (true) {
+    //     std.time.sleep(std.time.ns_per_s * 1);
+    // }
 
     // ctx.writeToFile("something.png");
 }

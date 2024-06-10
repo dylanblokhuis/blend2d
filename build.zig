@@ -5,6 +5,11 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const nojit = b.option(bool, "nojit", "Disable JIT compilation") orelse false;
+    const nofutex = b.option(bool, "nofutex", "Disable Futex") orelse false;
+    const notls = b.option(bool, "notls", "Disable Thread-Local Storage") orelse false;
+    const nostdcxx = b.option(bool, "nostdcxx", "Disable C++ Standard Library") orelse true;
+
     const lib = b.addSharedLibrary(.{
         .name = "blend2d",
         .target = target,
@@ -18,9 +23,54 @@ pub fn build(b: *std.Build) !void {
         lib.defineCMacro("BL_BUILD_RELEASE", null);
     }
 
-    lib.defineCMacro("ASMJIT_STATIC", null);
-    // TODO: add support for other SIMD instruction sets
-    lib.defineCMacro("BL_BUILD_OPT_AVX2", null);
+    if (nojit) {
+        lib.defineCMacro("BL_BUILD_NO_JIT", null);
+    }
+    if (nostdcxx) {
+        lib.defineCMacro("BL_BUILD_NO_STDCXX", null);
+    }
+    if (nofutex) {
+        lib.defineCMacro("BL_BUILD_NO_FUTEX", null);
+    }
+    if (notls) {
+        lib.defineCMacro("BL_BUILD_NO_TLS", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .avx512f) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512bw) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512dq) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512cd) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512vl)) {
+        lib.defineCMacro("BL_BUILD_OPT_AVX512", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .avx2)) {
+        lib.defineCMacro("BL_BUILD_OPT_AVX2", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .avx)) {
+        lib.defineCMacro("BL_BUILD_OPT_AVX", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .sse4_2)) {
+        lib.defineCMacro("BL_BUILD_OPT_SSE4_2", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .sse4_1)) {
+        lib.defineCMacro("BL_BUILD_OPT_SSE4_1", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .ssse3)) {
+        lib.defineCMacro("BL_BUILD_OPT_SSSE3", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .sse3)) {
+        lib.defineCMacro("BL_BUILD_OPT_SSE3", null);
+    }
+
+    if (std.Target.x86.featureSetHas(builtin.cpu.features, .sse2)) {
+        lib.defineCMacro("BL_BUILD_OPT_SSE2", null);
+    }
+
+    if (std.Target.aarch64.featureSetHas(builtin.cpu.features, .neon)) {
+        lib.defineCMacro("BL_BUILD_OPT_ASIMD", null);
+    }
 
     lib.linkLibC();
     lib.linkLibCpp();
