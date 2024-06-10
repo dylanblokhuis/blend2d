@@ -18,13 +18,27 @@ pub fn build(b: *std.Build) !void {
 
     if (optimize == .Debug) {
         lib.defineCMacro("BL_BUILD_DEBUG", null);
+        lib.defineCMacro("ASMJIT_BUILD_DEBUG", null);
     } else {
         lib.defineCMacro("NDEBUG", null);
         lib.defineCMacro("BL_BUILD_RELEASE", null);
+        lib.defineCMacro("ASMJIT_BUILD_RELEASE", null);
     }
 
     if (nojit) {
         lib.defineCMacro("BL_BUILD_NO_JIT", null);
+        lib.defineCMacro("ASMJIT_NO_JIT", null);
+
+        lib.defineCMacro("ASMJIT_NO_TEXT", null);
+        lib.defineCMacro("ASMJIT_NO_LOGGING", null);
+        lib.defineCMacro("ASMJIT_NO_VALIDATION", null);
+        lib.defineCMacro("ASMJIT_NO_INTROSPECTION", null);
+        lib.defineCMacro("ASMJIT_NO_BUILDER", null);
+        lib.defineCMacro("ASMJIT_NO_COMPILER", null);
+
+        lib.defineCMacro("ASMJIT_NO_DEPRECATED", null);
+        lib.defineCMacro("ASMJIT_NO_SHM_OPEN", null);
+        lib.defineCMacro("ASMJIT_NO_ABI_NAMESPACE", null);
     }
     if (nostdcxx) {
         lib.defineCMacro("BL_BUILD_NO_STDCXX", null);
@@ -34,6 +48,13 @@ pub fn build(b: *std.Build) !void {
     }
     if (notls) {
         lib.defineCMacro("BL_BUILD_NO_TLS", null);
+    }
+
+    if (builtin.cpu.arch == .x86 or builtin.cpu.arch == .x86_64) {
+        lib.defineCMacro("ASMJIT_NO_AARCH64", null);
+    }
+    if (builtin.cpu.arch == .aarch64) {
+        lib.defineCMacro("ASMJIT_NO_X86", null);
     }
 
     if (std.Target.x86.featureSetHas(builtin.cpu.features, .avx512f) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512bw) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512dq) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512cd) and std.Target.x86.featureSetHas(builtin.cpu.features, .avx512vl)) {
@@ -152,6 +173,7 @@ const src_files = [_][]const u8{
     "src/blend2d/random_test.cpp",
     "src/blend2d/rgba_test.cpp",
     "src/blend2d/runtime.cpp",
+    "src/blend2d/runtimescope.cpp",
     "src/blend2d/string.cpp",
     "src/blend2d/string_test.cpp",
     "src/blend2d/trace.cpp",
@@ -196,10 +218,18 @@ const src_files = [_][]const u8{
     "src/blend2d/pipeline/jit/fetchpatternpart.cpp",
     "src/blend2d/pipeline/jit/fetchpixelptrpart.cpp",
     "src/blend2d/pipeline/jit/fetchsolidpart.cpp",
-    "src/blend2d/pipeline/jit/fetchutils.cpp",
+    "src/blend2d/pipeline/jit/fetchutilsinlineloops.cpp",
+    "src/blend2d/pipeline/jit/fetchutilspixelaccess.cpp",
+    "src/blend2d/pipeline/jit/fetchutilspixelgather.cpp",
     "src/blend2d/pipeline/jit/fillpart.cpp",
+    "src/blend2d/pipeline/jit/pipecompiler_a64.cpp",
     "src/blend2d/pipeline/jit/pipecompiler_x86.cpp",
-    "src/blend2d/pipeline/jit/pipegencore.cpp",
+    "src/blend2d/pipeline/jit/pipecompiler_test.cpp",
+    "src/blend2d/pipeline/jit/pipecompiler_test_avx2fma.cpp",
+    "src/blend2d/pipeline/jit/pipecompiler_test_sse2.cpp",
+    "src/blend2d/pipeline/jit/pipecomposer.cpp",
+    "src/blend2d/pipeline/jit/pipefunction.cpp",
+    "src/blend2d/pipeline/jit/pipeprimitives.cpp",
     "src/blend2d/pipeline/jit/pipegenruntime.cpp",
     "src/blend2d/pipeline/jit/pipepart.cpp",
 
