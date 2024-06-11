@@ -27,8 +27,8 @@ pub fn build(b: *std.Build) void {
     const b2d = b.dependency("blend2d", .{
         .target = target,
         .optimize = optimize,
-        .nojit = true,
     });
+    exe.root_module.addImport("blend2d", b2d.module("blend2d"));
     exe.linkLibrary(b2d.artifact("blend2d"));
 
     // This declares intent for the executable to be installed into the
