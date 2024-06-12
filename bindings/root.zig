@@ -239,11 +239,27 @@ pub const BlContext = struct {
         check(c.blContextEnd(&self.ctx));
     }
 
+    pub fn flush(self: *Self) void {
+        check(c.blContextFlush(&self.ctx, c.BL_CONTEXT_FLUSH_SYNC));
+    }
+
     pub fn writeToFile(self: *Self, file_path: [:0]const u8) void {
         var codec: c.BLImageCodecCore = undefined;
         check(c.blImageCodecInit(&codec));
         check(c.blImageCodecFindByName(&codec, "PNG", c.SIZE_MAX, null));
         check(c.blImageWriteToFile(&self.img, file_path, &codec));
+    }
+
+    pub fn getData(self: *Self) []u32 {
+        var data: c.BLImageData = undefined;
+        check(c.blImageGetData(&self.img, &data));
+
+        const ptr: [*c]u32 = @ptrCast(@alignCast(data.pixelData));
+        const w: usize = @intCast(data.size.w);
+        const h: usize = @intCast(data.size.h);
+        const stride: usize = @intCast(data.stride);
+
+        return ptr[0 .. (w * h) * stride];
     }
 
     pub fn loadFontFace(self: *Self, file_path: [:0]const u8, id: [:0]const u8) ![:0]const u8 {
